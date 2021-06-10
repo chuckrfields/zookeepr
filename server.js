@@ -3,6 +3,11 @@ const express = require('express');
 const PORT = process.env.PORT || 3001;
 const app = express();
 
+function findByID(id, animalsArray) {
+    const result = animalsArray.filter(animal => animal.id === id) [0];
+    return result;
+}
+
 // add route
 // The get() method requires two arguments. 
 // The first is a string that describes the route the client will have to fetch from. 
@@ -19,7 +24,15 @@ app.get('/api/animals', (req, res) => {
     }
     // console.log(req.query);
     res.json(results);
+});
 
+app.get('/api/animals/:id', (req, res) => {
+    const result = findByID(req.params.id, animals);
+    if (result) {
+        res.json(result);
+    } else {
+        res.send(404);
+    }
 });
 
 function filterByQuery(query, animalsArray) {
