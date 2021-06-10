@@ -1,7 +1,8 @@
 const fs = require('fs');
 const path = require('path'); // provides utilities for working with file and directory paths
-const { animals } = require('./data/animals');  // { animails } is destructuring
 const express = require('express');
+const { animals } = require('./data/animals');  // { animails } is destructuring
+
 const PORT = process.env.PORT || 3001;
 const app = express();
 
@@ -14,10 +15,54 @@ app.use(express.urlencoded({ extended: true })); // takes incoming POST data and
 // parse incoming JSON data
 app.use(express.json()); // takes incoming POST data in the form of JSON and parses it into the req.body JavaScript object
 
+// serve web page assets
+// provide a file path to a location in our application (in this case, the public folder) and instruct the server to make these files static resources
+app.use(express.static('public'));
+
 /*
   Middleware functions can serve many different purposes. Ultimately they allow us to keep our route endpoint callback functions more readable 
   while letting us reuse functionality across routes to keep our code DRY.
 */
+
+function filterByQuery(query, animalsArray) {
+    let personalityTraitsArray = [];
+    // Note that we save the animalsArray as filteredResults
+    let filteredResults = animalsArray;
+
+    if (query.personalityTraits) {
+        // Save personalityTraits as a dedicated array
+        if (typeof query.personalityTraits === 'string') {
+            personalityTraitsArray = [query.personalityTraits];
+        } else {
+            personalityTraitsArray = query.personalityTraits;
+        }
+
+    // Loop through each trait in the personalityTraits array:
+    personalityTraitsArray.forEach(trait => {
+        // Check the trait against each animal in the filteredResults array.
+        // Remember, it is initially a copy of the animalsArray,
+        // but here we're updating it for each trait in the .forEach() loop.
+        // For each trait being targeted by the filter, the filteredResults
+        // array will then contain only the entries that contain the trait,
+        // so at the end we'll have an array of animals that have every one 
+        // of the traits when the .forEach() loop is finished.
+        filteredResults = filteredResults.filter(
+            animal => animal.personalityTraits.indexOf(trait) !== -1
+        );
+        });
+    }
+
+    if (query.diet) {
+        filteredResults = filteredResults.filter(animal => animal.diet === query.diet);
+    }
+    if (query.species) {
+        filteredResults = filteredResults.filter(animal => animal.species === query.species);
+    }
+    if (query.name) {
+        filteredResults = filteredResults.filter(animal => animal.name === query.name);
+    }
+    return filteredResults;
+}
 
 function findByID(id, animalsArray) {
     const result = animalsArray.filter(animal => animal.id === id) [0];
@@ -107,45 +152,23 @@ app.post('/api/animals', (req, res) => {
     }
 });
 
-function filterByQuery(query, animalsArray) {
-    let personalityTraitsArray = [];
-    // Note that we save the animalsArray as filteredResults
-    let filteredResults = animalsArray;
+// serve index.html
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, './public/index.html'));
+});
 
-    if (query.personalityTraits) {
-        // Save personalityTraits as a dedicated array
-        if (typeof query.personalityTraits === 'string') {
-            personalityTraitsArray = [query.personalityTraits];
-        } else {
-            personalityTraitsArray = query.personalityTraits;
-        }
+app.get('/animals', (req, res) => {
+    res.sendFile(path.join(__dirname, './public/animals.html'));
+});
 
-    // Loop through each trait in the personalityTraits array:
-    personalityTraitsArray.forEach(trait => {
-        // Check the trait against each animal in the filteredResults array.
-        // Remember, it is initially a copy of the animalsArray,
-        // but here we're updating it for each trait in the .forEach() loop.
-        // For each trait being targeted by the filter, the filteredResults
-        // array will then contain only the entries that contain the trait,
-        // so at the end we'll have an array of animals that have every one 
-        // of the traits when the .forEach() loop is finished.
-        filteredResults = filteredResults.filter(
-            animal => animal.personalityTraits.indexOf(trait) !== -1
-        );
-        });
-    }
+app.get('/zookeepers', (req, res) => {
+    res.sendFile(path.join(__dirname, './public/zookeepers.html'));
+});
 
-    if (query.diet) {
-        filteredResults = filteredResults.filter(animal => animal.diet === query.diet);
-    }
-    if (query.species) {
-        filteredResults = filteredResults.filter(animal => animal.species === query.species);
-    }
-    if (query.name) {
-        filteredResults = filteredResults.filter(animal => animal.name === query.name);
-    }
-    return filteredResults;
-}
+// redirect if route doesn't exist (this should always come last!)
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, './public/index.html'));
+});
 
 app.listen(PORT, () => {
     console.log(`API server now listening on port ${PORT}!`);
