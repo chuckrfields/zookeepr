@@ -15,7 +15,7 @@ This is a zoo catalog demonstrating Node.js with Jest TDD, APIs for retrieving a
 * [Tests](#tests)
 
 # Screen shot
-![demo site](../../public/assets/images/ZookeeprScreenShot.png)
+![demo site](/public/assets/images/ZookeeprScreenShot.png)
 
 ## URL
 https://still-peak-47959.herokuapp.com/
