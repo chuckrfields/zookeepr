@@ -14,7 +14,7 @@ This is a zoo catalog demonstrating Node.js with Jest TDD, APIs for retrieving a
 * [Contributing](#contributing)
 * [Tests](#tests)
 
-# Screen shot
+## Screen shot
 ![demo site](/public/assets/images/ZookeeprScreenShot.png)
 
 ## URL
